@@ -1,0 +1,29 @@
+{
+  "name": "restful-booker-api-tests",
+  "version": "1.0.0",
+  "description": "Restful-Booker API tests with Postman, Newman, and HTML reports",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "newman run postman/RestfulBooker.postman_collection.json -e postman/restful-booker.postman_environment.json --folder Health --folder Auth --folder Bookings --folder Negative --reporters cli,htmlextra,json --reporter-htmlextra-export reports/report.html --reporter-json-export reports/report.json",
+    "test:known-bugs": "newman run postman/RestfulBooker.postman_collection.json -e postman/restful-booker.postman_environment.json --folder Auth --folder \"Known bugs\" --reporters cli,htmlextra,json --reporter-htmlextra-export reports/known-bugs.html --reporter-json-export reports/known-bugs.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/llunasv/restful-booker-api-tests.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/llunasv/restful-booker-api-tests/issues"
+  },
+  "homepage": "https://github.com/llunasv/restful-booker-api-tests#readme",
+  "devDependencies": {
+    "newman": "^6.2.3",
+    "newman-reporter-htmlextra": "^1.23.1"
+  }
+}
