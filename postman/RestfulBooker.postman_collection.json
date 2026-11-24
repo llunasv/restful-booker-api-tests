@@ -351,7 +351,7 @@
             "header": [
               {
                 "key": "Cookie",
-                "value": " token={{token}}"
+                "value": "token={{token}}"
               }
             ],
             "url": {
@@ -461,7 +461,7 @@
             "header": [
               {
                 "key": "Content-Type",
-                "value": " application/json"
+                "value": "application/json"
               }
             ],
             "body": {
@@ -600,6 +600,374 @@
           "response": []
         },
         {
+          "name": "Create booking: empty booking body",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.unset(\"validationBookingId\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 500 (known validation bug)\", function () {",
+                  "    pm.response.to.have.status(500);",
+                  "});",
+                  "pm.test(\"Response says Internal Server Error\", function () {",
+                  "    pm.expect(pm.response.text()).to.equal(\"Internal Server Error\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            },
+            "description": "Submits empty booking body. Observed 500; this characterizes the current bug, not acceptable validation. Desired rejection is tracked by BUG-003 in Known bugs.",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create booking: missing firstname",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.unset(\"validationBookingId\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 500 (known validation bug)\", function () {",
+                  "    pm.response.to.have.status(500);",
+                  "});",
+                  "pm.test(\"Response says Internal Server Error\", function () {",
+                  "    pm.expect(pm.response.text()).to.equal(\"Internal Server Error\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            },
+            "description": "Submits missing firstname. Observed 500; this characterizes the current bug, not acceptable validation. Desired rejection is tracked by BUG-003 in Known bugs.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"depositpaid\": true,\n    \"additionalneeds\": \"Breakfast\",\n    \"lastname\": \"Booker\",\n    \"bookingdates\": {\n        \"checkin\": \"2027-01-10\",\n        \"checkout\": \"2027-01-15\"\n    },\n    \"totalprice\": 150\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create booking: negative totalprice",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.unset(\"validationBookingId\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200 (known validation bug)\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "const response = pm.response.json();",
+                  "pm.test(\"Accepted booking ID is a number\", function () {",
+                  "    pm.expect(response.bookingid).to.be.a(\"number\");",
+                  "});",
+                  "pm.test(\"Returned booking contains the submitted invalid data\", function () {",
+                  "    pm.expect(response.booking).to.deep.equal(JSON.parse(pm.request.body.raw));",
+                  "});",
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (typeof response.bookingid === \"number\") {",
+                  "        pm.environment.set(\"validationBookingId\", response.bookingid);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            },
+            "description": "Submits negative totalprice. Observed 200; this characterizes the current bug, not acceptable validation. Desired rejection is tracked by BUG-004 in Known bugs.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"depositpaid\": true,\n    \"additionalneeds\": \"Breakfast\",\n    \"lastname\": \"Booker\",\n    \"bookingdates\": {\n        \"checkin\": \"2027-01-10\",\n        \"checkout\": \"2027-01-15\"\n    },\n    \"totalprice\": -150,\n    \"firstname\": \"ValidationQA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Clean up validation booking: negative totalprice",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.environment.get(\"validationBookingId\")) {",
+                  "    pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Validation booking is deleted\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "if (pm.response.code === 201) {",
+                  "    pm.environment.unset(\"validationBookingId\");",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "token={{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{validationBookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{validationBookingId}}"
+              ]
+            },
+            "description": "Deletes only the validation booking created by the preceding request. Skips the HTTP request when validation correctly rejects the input and no booking ID exists."
+          },
+          "response": []
+        },
+        {
+          "name": "Create booking: checkout before checkin",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.unset(\"validationBookingId\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200 (known validation bug)\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "const response = pm.response.json();",
+                  "pm.test(\"Accepted booking ID is a number\", function () {",
+                  "    pm.expect(response.bookingid).to.be.a(\"number\");",
+                  "});",
+                  "pm.test(\"Returned booking contains the submitted invalid data\", function () {",
+                  "    pm.expect(response.booking).to.deep.equal(JSON.parse(pm.request.body.raw));",
+                  "});",
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (typeof response.bookingid === \"number\") {",
+                  "        pm.environment.set(\"validationBookingId\", response.bookingid);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            },
+            "description": "Submits checkout before checkin. Observed 200; this characterizes the current bug, not acceptable validation. Desired rejection is tracked by BUG-005 in Known bugs.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"depositpaid\": true,\n    \"additionalneeds\": \"Breakfast\",\n    \"lastname\": \"Booker\",\n    \"bookingdates\": {\n        \"checkin\": \"2027-01-15\",\n        \"checkout\": \"2027-01-10\"\n    },\n    \"totalprice\": 150,\n    \"firstname\": \"ValidationQA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Clean up validation booking: checkout before checkin",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.environment.get(\"validationBookingId\")) {",
+                  "    pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Validation booking is deleted\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "if (pm.response.code === 201) {",
+                  "    pm.environment.unset(\"validationBookingId\");",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "token={{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{validationBookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{validationBookingId}}"
+              ]
+            },
+            "description": "Deletes only the validation booking created by the preceding request. Skips the HTTP request when validation correctly rejects the input and no booking ID exists."
+          },
+          "response": []
+        },
+        {
           "name": "Delete negative test booking",
           "event": [
             {
@@ -635,7 +1003,7 @@
           "response": []
         }
       ],
-      "description": "Checks API responses to missing authentication, incorrect credentials, and requests for a nonexistent booking."
+      "description": "Checks API responses to missing authentication, incorrect credentials, and requests for a nonexistent booking. Also characterizes four observed input-validation defects; accepted invalid bookings are cleaned up immediately."
     },
     {
       "name": "Known bugs",
@@ -705,7 +1073,7 @@
             "header": [
               {
                 "key": "Cookie",
-                "value": " token={{token}}"
+                "value": "token={{token}}"
               }
             ],
             "url": {
@@ -759,9 +1127,357 @@
             "description": "Checks the project requirement that incorrect credentials return 401. Observed behavior: 200 with {\"reason\":\"Bad credentials\"}. The status assertion is expected to fail. This request does not change the saved token. Treat 401 as a project design expectation rather than a verified API contract requirement."
           },
           "response": []
+        },
+        {
+          "name": "BUG-003: Empty booking body",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.unset(\"validationBookingId\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"BUG-003: Empty booking body returns 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            },
+            "description": "Expected failure: empty booking body should be rejected as invalid input. Observed 500. See docs/bug-reports.md.",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "BUG-003: Missing firstname",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.unset(\"validationBookingId\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"BUG-003: Missing firstname returns 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            },
+            "description": "Expected failure: missing firstname should be rejected as invalid input. Observed 500. See docs/bug-reports.md.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"depositpaid\": true,\n    \"additionalneeds\": \"Breakfast\",\n    \"lastname\": \"Booker\",\n    \"bookingdates\": {\n        \"checkin\": \"2027-01-10\",\n        \"checkout\": \"2027-01-15\"\n    },\n    \"totalprice\": 150\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "BUG-004: Negative totalprice",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.unset(\"validationBookingId\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"BUG-004: Negative totalprice is rejected with 400 or 422\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([400, 422]);",
+                  "});",
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (typeof response.bookingid === \"number\") {",
+                  "        pm.environment.set(\"validationBookingId\", response.bookingid);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            },
+            "description": "Expected failure: negative totalprice should be rejected as invalid input. Observed 200. See docs/bug-reports.md.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"depositpaid\": true,\n    \"additionalneeds\": \"Breakfast\",\n    \"lastname\": \"Booker\",\n    \"bookingdates\": {\n        \"checkin\": \"2027-01-10\",\n        \"checkout\": \"2027-01-15\"\n    },\n    \"totalprice\": -150,\n    \"firstname\": \"ValidationQA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "BUG-004: Clean up accepted invalid booking",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.environment.get(\"validationBookingId\")) {",
+                  "    pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"BUG-004: Validation booking is deleted\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "if (pm.response.code === 201) {",
+                  "    pm.environment.unset(\"validationBookingId\");",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "token={{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{validationBookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{validationBookingId}}"
+              ]
+            },
+            "description": "Deletes only the validation booking created by the preceding request. Skips the HTTP request when validation correctly rejects the input and no booking ID exists."
+          },
+          "response": []
+        },
+        {
+          "name": "BUG-005: Checkout before checkin",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.unset(\"validationBookingId\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"BUG-005: Checkout before checkin is rejected with 400 or 422\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([400, 422]);",
+                  "});",
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (typeof response.bookingid === \"number\") {",
+                  "        pm.environment.set(\"validationBookingId\", response.bookingid);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            },
+            "description": "Expected failure: checkout before checkin should be rejected as invalid input. Observed 200. See docs/bug-reports.md.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"depositpaid\": true,\n    \"additionalneeds\": \"Breakfast\",\n    \"lastname\": \"Booker\",\n    \"bookingdates\": {\n        \"checkin\": \"2027-01-15\",\n        \"checkout\": \"2027-01-10\"\n    },\n    \"totalprice\": 150,\n    \"firstname\": \"ValidationQA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "BUG-005: Clean up accepted invalid booking",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.environment.get(\"validationBookingId\")) {",
+                  "    pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"BUG-005: Validation booking is deleted\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "if (pm.response.code === 201) {",
+                  "    pm.environment.unset(\"validationBookingId\");",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "token={{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{validationBookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{validationBookingId}}"
+              ]
+            },
+            "description": "Deletes only the validation booking created by the preceding request. Skips the HTTP request when validation correctly rejects the input and no booking ID exists."
+          },
+          "response": []
         }
       ],
-      "description": "Tracks observed HTTP status-code issues. Bug assertions express the desired behavior and are expected to fail until fixed. Excluded from CI. Run Auth first, then this folder. BUG-002 uses the project requirement of 401 for incorrect credentials."
+      "description": "Tracks observed HTTP status-code issues. Bug assertions express the desired behavior and are expected to fail until fixed. Exclude this folder when configuring CI; it intentionally contains failing assertions. Run Auth first, then this folder. BUG-002 uses the project requirement of 401 for incorrect credentials."
     }
   ],
   "event": [
